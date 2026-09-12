@@ -1,0 +1,45 @@
+============================================================================
+                ADDON-BEFEHLSLISTE: BERUFE SKILL GUIDE (BSG)
+============================================================================
+
+[1] STANDARD-BEFEHL (HAUPTFENSTER)
+----------------------------------------------------------------------------
+/bsg
+-> Öffnet oder schließt das dunkelblaue Addon-Fenster auf deinem Bildschirm.
+
+
+[2] ENTWICKLER-SANDBOX (SIMULATION)
+----------------------------------------------------------------------------
+Nutze diese Befehle, um Guides für Berufe zu testen, die dein Charakter 
+nicht gelernt hat. Das System trennt Zahlen automatisch ab.
+
+/bsg sim [Beruf] [Stufe]     - Startet die Simulation (Standard)
+/bsg sin [Beruf] [Stufe]     - Fehlertolerante Variante bei Vertippern
+/bsg sim [Beruf][Stufe]      - Schnellschreibweise (z.B. /bsg sim Schneidern150)
+/bsg sim off                 - Schaltet die Simulation sofort wieder aus
+
+Verfügbare Berufsnamen für die Simulation:
+- Alchimie (oder Alchemie)
+- Schmiedekunst
+- Ingenieurskunst
+- Lederverarbeitung
+- Schneidern
+- Verzauberkunst
+- Kochkunst
+
+
+[3] DIAGNOSE- & PRÜF-BEFEHLE
+----------------------------------------------------------------------------
+/bsg check [Beruf]
+-> Der Datenbank-Inspector. Scanned die .lua-Datei des Berufs in Echtzeit 
+   und meldet dir sofort im Chat, ob es Skill-Lücken oder Formatfehler gibt.
+   (Beispiel: /bsg check Schmiedekunst)
+
+/bsg debug
+-> Der Live-Logger. Schaltet die orangeroten Hintergrund-Meldungen im Chat 
+   ein oder aus, um die Live-Arbeit des Codes zu überwachen.
+
+
+============================================================================
+                   IMMER BEREIT FÜR DEN ENTWICKLER-EINSATZ!
+============================================================================

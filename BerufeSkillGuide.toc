@@ -1,0 +1,59 @@
+## Interface: 11502
+## Title: Berufe Skill Guide
+## Notes: Ein Ingame-Guide zum Leveln von Berufen in WoW Classic.
+## Author: icêheal / Neovinger
+## Version: 1.8
+## IconTexture: Interface\AddOns\BerufeSkillGuide\Icon.png
+## SavedVariables: BerufeSkillGuideDB
+## OptionalDeps: TomTom
+
+## ============================================================================
+## 1. CORE, BASE LIBRARIES & APIS
+## ============================================================================
+BSG_Core.lua
+DebugLog.lua
+API.lua
+AccountScanner.lua
+BSG_TomTom.lua
+
+## ============================================================================
+## 2. LOCALIZATION (SPRACHDATEIEN)
+## ============================================================================
+Locale\deDE.lua
+Locale\enUS.lua
+
+## ============================================================================
+## 3. DATENBANKEN (ITEMS & GUIDES)
+## ============================================================================
+Data\Daten_Alchimie.lua
+Data\Daten_Schmiedekunst.lua
+Data\Daten_Verzauberkunst.lua
+Data\Daten_Ingenieurskunst.lua
+Data\Daten_Lederverarbeitung.lua
+Data\Daten_Schneidern.lua
+Data\Daten_Kochen.lua
+Data\Daten_Items.lua
+Data\Daten_Lehrer.lua
+Data\Daten_Fundorte.lua
+Data\Daten_Fundorte_Alchimie.lua
+Data\Daten_Fundorte_Lederverarbeitung.lua
+Data\Daten_Fundorte_Schneidern.lua
+
+## ============================================================================
+## 4. INTERFACE-MODULE & SUBSYSTEME
+## ============================================================================
+MainUI.lua
+Search\ScrollFrame.lua
+Search\Search.lua
+Sidebar\Sidebar.lua
+Options\Options.lua
+GoldPlaner\GoldPlaner.lua
+MatIcons.lua
+Debug.lua
+Simulation.lua
+Inspector.lua
+
+## ============================================================================
+## 5. SLASH-COMMANDS (MUSS NACH DEN OBEN GELADENEN MODULEN STEHEN!)
+## ============================================================================
+SlashCommands.lua
