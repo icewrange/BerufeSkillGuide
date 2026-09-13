@@ -24,7 +24,7 @@ BerufeGuideDB["Ingenieurskunst"] = {
     -- BILD 3: EXPERTE (SKILL 135 - 200)
     -- ------------------------------------------------------------------------
     { minSkill = 135, maxSkill = 145, item = "30 Schweres Sprengpulver", mats = "30 Schwerer Stein" },
-    { minSkill = 135, maxSkill = 150, item = "15 Surrendes bronzenes Dingsda", mats = "30 Bronzebarren, 15 Wollstoff" },
+    { minSkill = 145, maxSkill = 150, item = "15 Surrendes bronzenes Dingsda", mats = "30 Bronzebarren, 15 Wollstoff" },
     { minSkill = 150, maxSkill = 160, item = "15 Bronzegerüst", mats = "30 Bronzebarren, 15 Mittleres Leder, 15 Wollstoff" },
     { minSkill = 160, maxSkill = 175, item = "15 Explodierendes Schaf", mats = "15 Bronzegerüst, 15 Surrendes bronzenes Dingsda, 30 Schweres Sprengpulver, 30 Wollstoff" },
     { minSkill = 175, maxSkill = 176, item = "1 Gyromatischer Mikroregler", mats = "4 Stahlbarren" },
