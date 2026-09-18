@@ -39,6 +39,10 @@ Data\Daten_Fundorte.lua
 Data\Daten_Fundorte_Alchimie.lua
 Data\Daten_Fundorte_Lederverarbeitung.lua
 Data\Daten_Fundorte_Schneidern.lua
+Data\Daten_Fundorte_Ingenieurskunst.lua
+Data\Daten_Fundorte_Schmiedekunst.lua
+Data\Daten_Fundorte_Kochen.lua
+Data\Daten_Fundorte_Verzauberkunst.lua
 
 ## ============================================================================
 ## 4. INTERFACE-MODULE & SUBSYSTEME
