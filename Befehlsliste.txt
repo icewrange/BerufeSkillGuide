@@ -26,6 +26,7 @@ Verfügbare Berufsnamen für die Simulation:
 - Schneidern
 - Verzauberkunst
 - Kochkunst
+- Erste Hilfe (Alias für die Simulation: "erstehilfe", z.B. /bsg sim erstehilfe100)
 
 
 [3] DIAGNOSE- & PRÜF-BEFEHLE

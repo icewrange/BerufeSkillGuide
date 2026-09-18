@@ -37,7 +37,8 @@ Simulation beenden:
 
 Verfügbare Berufsnamen für die Simulation:
   Alchimie (oder Alchemie), Schmiedekunst, Ingenieurskunst,
-  Lederverarbeitung, Schneidern, Verzauberkunst, Kochkunst
+  Lederverarbeitung, Schneidern, Verzauberkunst, Kochkunst,
+  Erste Hilfe (Alias: "erstehilfe", z.B. /bsg sim erstehilfe100)
 
 ----------------------------------------------------------------------------
 3. DATENBANK-INSPECTOR (QUALITÄTSKONTROLLE)

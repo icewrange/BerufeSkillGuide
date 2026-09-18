@@ -22,7 +22,13 @@ function BSG_API.GetGelernteBerufe()
         -- NEU: Kochkunst (Sekundärberuf). Spell-ID 2550 = "Kochkunst"
         -- (Grundfertigkeit, bestätigt über Wowhead), analog zu den
         -- anderen Berufen als Erkennungs-Spell genutzt.
-        { name = "Kochkunst", id = 2550, icon = "Interface\\Icons\\INV_Misc_Food_15" }
+        { name = "Kochkunst", id = 2550, icon = "Interface\\Icons\\INV_Misc_Food_15" },
+        -- NEU: Erste Hilfe (Sekundärberuf). Spell-ID 3273 = "Erste Hilfe"
+        -- Lehrlingsstufe (erlaubt Verbände bis Skill 75), über Wowhead
+        -- gegengeprüft. WICHTIG: "name" MUSS hier exakt "Erste Hilfe" (mit
+        -- Leerzeichen) sein, weil GetSkillLineInfo() diesen String genau so
+        -- zurückgibt - siehe Hinweis in Data/Daten_ErsteHilfe.lua.
+        { name = "Erste Hilfe", id = 3273, icon = "Interface\\Icons\\Spell_Holy_SealOfSacrifice" }
     }
 
     -- Wir pruefen direkt im Zauberbuch, ob der Spieler den Beruf beherrscht

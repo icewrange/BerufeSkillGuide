@@ -24,6 +24,7 @@ function BSG_Simulation.SetFakeBeruf(berufName, skillLevel)
     if berufName == "Schneidern" then icon = "Interface\\Icons\\Trade_Tailoring" end
     if berufName == "Verzauberkunst" then icon = "Interface\\Icons\\Spell_Nature_Lightning" end
     if berufName == "Kochkunst" then icon = "Interface\\Icons\\INV_Misc_Food_15" end
+    if berufName == "Erste Hilfe" then icon = "Interface\\Icons\\Spell_Holy_SealOfSacrifice" end
 
     -- Wir befüllen die Fake-Tabelle
     BerufeSkillGuideDB.isSimulating = true

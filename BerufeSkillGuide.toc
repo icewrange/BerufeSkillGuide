@@ -32,6 +32,7 @@ Data\Daten_Ingenieurskunst.lua
 Data\Daten_Lederverarbeitung.lua
 Data\Daten_Schneidern.lua
 Data\Daten_Kochen.lua
+Data\Daten_ErsteHilfe.lua
 Data\Daten_Items.lua
 Data\Daten_Lehrer.lua
 Data\Daten_Fundorte.lua

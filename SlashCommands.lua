@@ -21,6 +21,11 @@ local BERUF_ALIASE = {
     ["verzauberkunst"] = "Verzauberkunst",
     ["kochkunst"] = "Kochkunst",
     ["kochen"] = "Kochkunst",
+    -- NEU: "Erste Hilfe" besteht aus zwei Wörtern, ParseSimArgument kann aber
+    -- nur ein einzelnes Wort vor der Zahl erkennen (%a+). Deshalb bekommt der
+    -- Beruf hier einen einwortigen Alias, der auf den echten Datenbank-Key
+    -- (mit Leerzeichen) abgebildet wird.
+    ["erstehilfe"] = "Erste Hilfe",
 }
 
 -- Versucht "sim Schneidern 150" UND "sim Schneidern150" (ohne Leerzeichen)
