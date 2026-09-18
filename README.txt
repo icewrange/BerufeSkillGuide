@@ -5,6 +5,11 @@ Dieses Addon ist ein mächtiges All-in-One-Werkzeug für WoW Classic (Era/SoD),
 das kompakte Level-Guides, einen Echtzeit-Taschen-Scanner, eine dynamische
 Ressourcen-Hochrechnung sowie eingebaute Entwickler-Tools bietet.
 
+Besonderheit: Jede Berufs-Datenbank wird bei jedem Login automatisch auf
+Lücken, Überschneidungen und fehlende Materialien geprüft (siehe Punkt 3).
+Das grüne Häkchen neben dem Fenstertitel zeigt dir sofort: dieser Guide
+wurde maschinell validiert, bevor du ihm folgst.
+
 ----------------------------------------------------------------------------
 1. ALLGEMEINE BEFEHLE
 ----------------------------------------------------------------------------
@@ -38,6 +43,11 @@ Verfügbare Berufsnamen für die Simulation:
 3. DATENBANK-INSPECTOR (QUALITÄTSKONTROLLE)
 ----------------------------------------------------------------------------
 Scannt die Datenbanken im 'Data'-Ordner in Echtzeit auf Fehler und Lücken.
+Läuft automatisch und lautlos bei jedem Login (kein Chat-Spam) - das
+Ergebnis siehst du als Badge neben dem Fenstertitel:
+  grünes Häkchen (✓)  - Datenbank vollständig geprüft, keine Probleme.
+  oranges "!"         - Es wurden Probleme gefunden, anklicken für Details.
+Für die ausführliche Prüfung im Chat jederzeit manuell aufrufbar:
 
 Befehl:          /bsg check [Berufsname]
 

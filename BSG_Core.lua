@@ -50,6 +50,13 @@ initFrame:SetScript("OnEvent", function(self, event, ...)
     -- 1. Hauptfenster physisch im Spiel aufbauen
     BSG.ErstelleHauptfenster()
 
+    -- 1b. Datenbank-Inspector still im Hintergrund laufen lassen (kein
+    --     Chat-Spam), damit die Kopfzeile (MainUI.lua) direkt ein
+    --     "Datenbank geprüft"-Badge zeigen kann.
+    if _G["BSG_Inspector"] and _G["BSG_Inspector"].PruefeAlleStumm then
+        _G["BSG_Inspector"].PruefeAlleStumm()
+    end
+
     -- 2. Kopfzeile aufbauen: Titel, Rezept-Suchfeld, manuelle Skill-Eingabe,
     --    Optionen-Button, Schließen-Button
     if BerufeSkillGuideFrame and _G["BSG_MainUI"] and _G["BSG_MainUI"].InitialisiereUI then

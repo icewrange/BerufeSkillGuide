@@ -30,6 +30,57 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
     title:SetPoint("LEFT", titleBg, "LEFT", 15, 0)
     title:SetText("|cffffd100Berufe Skill Guide|r")
 
+    -- ========================================================================
+    -- 1b. DATENBANK-STATUS-BADGE
+    -- ========================================================================
+    -- Zeigt das Ergebnis des stillen Inspector-Checks vom Login (siehe
+    -- BSG_Core.lua -> BSG_Inspector.PruefeAlleStumm) als kleines Symbol neben
+    -- dem Titel: grüner Haken = Datenbank geprüft & sauber, oranges Ausrufe-
+    -- zeichen = es wurden Probleme gefunden. Klick öffnet die ausführliche
+    -- Prüfung im Chat (wie /bsg check).
+    local dbBadge = CreateFrame("Button", "BSG_MainUI_DBBadge", mainFrame)
+    dbBadge:SetSize(16, 16)
+    dbBadge:SetPoint("LEFT", title, "RIGHT", 8, 0)
+
+    local dbBadgeText = dbBadge:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dbBadgeText:SetAllPoints(dbBadge)
+
+    local function AktualisiereDBBadge()
+        local ergebnis = BSG_Inspector and BSG_Inspector.LetzterCheck
+        if not ergebnis then
+            dbBadgeText:SetText("|cff888888?|r")
+            dbBadge.tooltipText = "Datenbank noch nicht geprüft."
+        elseif ergebnis.ok then
+            dbBadgeText:SetText("|cff00ff00✓|r")
+            dbBadge.tooltipText = string.format(
+                "|cff00ff00Datenbank geprüft:|r %d Berufe, keine Probleme gefunden.\nKlicken für erneuten Check (/bsg check).",
+                ergebnis.anzahlBerufe
+            )
+        else
+            dbBadgeText:SetText("|cffff8800!|r")
+            dbBadge.tooltipText = string.format(
+                "|cffff8800Datenbank geprüft:|r %d Problem(e) gefunden.\nKlicken für Details (/bsg check).",
+                ergebnis.anzahlProbleme
+            )
+        end
+    end
+
+    dbBadge:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(self.tooltipText or "Datenbank-Status", 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    dbBadge:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    dbBadge:SetScript("OnClick", function()
+        if BSG_Inspector and BSG_Inspector.PruefeAlle then
+            BSG_Inspector.PruefeAlle()
+        end
+        AktualisiereDBBadge()
+    end)
+
+    AktualisiereDBBadge()
+    BSG_MainUI.AktualisiereDBBadge = AktualisiereDBBadge
+
     -- Schließen-Button (rotes X, oben rechts)
     local closeBtn = CreateFrame("Button", "BSG_MainUI_CloseBtn", mainFrame, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", mainFrame, "TOPRIGHT", -4, -4)
