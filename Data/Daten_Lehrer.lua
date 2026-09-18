@@ -114,5 +114,26 @@ BerufeLehrerDB = {
             hordeZone = "Desolace", hordeX = 27, hordeY = 69
         },
         { stufe = "Meister (225-300)", standorte = "Questreihe ab Skill 225 & Charakterstufe 35: Allianz bei Daryl Riknussun (Ironforge) / Horde bei Zamja (Orgrimmar), Abschluss bei Dirge Quikcleave in Gadgetzan" }
+    },
+    -- NEU: Erste-Hilfe-Lehrer. Koordinaten für Experte & Meister mehrfach
+    -- über Wowhead-NPC-Seiten (Community-Kommentare) bestätigt:
+    -- Deneb Walker (npc=2805), Balai Lok'Wein (npc=13476),
+    -- Doktor Gustaf Van Howzen (npc=12939), Doktor Gregory Victor (npc=12920).
+    ["Erste Hilfe"] = {
+        { stufe = "Lehrling / Geselle (1-150)", standorte = "Allianz & Horde: Erste-Hilfe-Lehrer sind in praktisch jeder größeren Stadt bzw. jedem Startgebiet vorhanden." },
+        {
+            stufe = "Experte (150-225)",
+            standorte = "Allianz: Deneb Walker in Arathihochland\nHorde: Balai Lok'Wein in Marschen von Dustwallow (Brackenwall Village)",
+            allianzZone = "Arathihochland", allianzX = 27, allianzY = 58,
+            hordeZone = "Marschen von Dustwallow", hordeX = 36, hordeY = 30
+        },
+        {
+            stufe = "Meister (225-300)",
+            -- Questreihe "Triage": Charakterstufe 35 + Erste-Hilfe-Skill 225
+            -- sind Voraussetzung, bevor die Doktoren die Quest anbieten.
+            standorte = "Questreihe 'Triage' (Stufe 35 + Skill 225 nötig):\nAllianz: Doktor Gustaf Van Howzen in Marschen von Dustwallow (Hochburg-Zitadel)\nHorde: Doktor Gregory Victor in Arathihochland (Hammerfall)",
+            allianzZone = "Marschen von Dustwallow", allianzX = 67, allianzY = 48,
+            hordeZone = "Arathihochland", hordeX = 73, hordeY = 36
+        }
     }
 }
