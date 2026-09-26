@@ -1,20 +1,20 @@
-## Interface: 11502
+## Interface: 11509, 16001
 ## Title: Berufe Skill Guide
-## Notes: Ein Ingame-Guide zum Leveln von Berufen in WoW Classic.
-## Author: icêheal / Neovinger
-## Version: 1.8
-## IconTexture: Interface\AddOns\BerufeSkillGuide\Icon.png
+## Notes: Ein Ingame-Guide zum Leveln von Berufen in WoW Classic und WoW Forever.
+## Author: icêheal
+## Version: 2.1
 ## SavedVariables: BerufeSkillGuideDB
-## OptionalDeps: TomTom
 
 ## ============================================================================
 ## 1. CORE, BASE LIBRARIES & APIS
 ## ============================================================================
+Compat.lua
+BSG_Berufe.lua
+BSG_Skillstufen.lua
 BSG_Core.lua
 DebugLog.lua
 API.lua
 AccountScanner.lua
-BSG_TomTom.lua
 
 ## ============================================================================
 ## 2. LOCALIZATION (SPRACHDATEIEN)
@@ -25,38 +25,79 @@ Locale\enUS.lua
 ## ============================================================================
 ## 3. DATENBANKEN (ITEMS & GUIDES)
 ## ============================================================================
-Data\Daten_Alchimie.lua
-Data\Daten_Schmiedekunst.lua
-Data\Daten_Verzauberkunst.lua
-Data\Daten_Ingenieurskunst.lua
-Data\Daten_Lederverarbeitung.lua
-Data\Daten_Schneidern.lua
-Data\Daten_Kochen.lua
-Data\Daten_ErsteHilfe.lua
-Data\Daten_Items.lua
-Data\Daten_Lehrer.lua
-Data\Daten_Fundorte.lua
-Data\Daten_Fundorte_Alchimie.lua
-Data\Daten_Fundorte_Lederverarbeitung.lua
-Data\Daten_Fundorte_Schneidern.lua
-Data\Daten_Fundorte_Ingenieurskunst.lua
-Data\Daten_Fundorte_Schmiedekunst.lua
-Data\Daten_Fundorte_Kochen.lua
-Data\Daten_Fundorte_Verzauberkunst.lua
+# --- Classic: Skill-Guides ---
+Data\Classic\Guides\Daten_Alchimie.lua
+Data\Classic\Guides\Daten_Alchimie_EN.lua
+Data\Classic\Guides\Daten_Schmiedekunst.lua
+Data\Classic\Guides\Daten_Schmiedekunst_EN.lua
+Data\Classic\Guides\Daten_Verzauberkunst.lua
+Data\Classic\Guides\Daten_Verzauberkunst_EN.lua
+Data\Classic\Guides\Daten_Ingenieurskunst.lua
+Data\Classic\Guides\Daten_Ingenieurskunst_EN.lua
+Data\Classic\Guides\Daten_Lederverarbeitung.lua
+Data\Classic\Guides\Daten_Lederverarbeitung_EN.lua
+Data\Classic\Guides\Daten_Schneidern.lua
+Data\Classic\Guides\Daten_Schneidern_EN.lua
+Data\Classic\Guides\Daten_Kochen.lua
+Data\Classic\Guides\Daten_Kochen_EN.lua
+Data\Classic\Guides\Daten_ErsteHilfe.lua
+Data\Classic\Guides\Daten_ErsteHilfe_EN.lua
+Data\Classic\Guides\Daten_Sammelberufe.lua
+Data\Classic\Guides\Daten_Sammelberufe_EN.lua
+
+# --- Allgemein: Item-IDs (für Icons, beide Versionen) ---
+Data\Allgemein\Daten_Items.lua
+Data\Allgemein\Daten_Suchnamen.lua
+
+# --- Classic: Lehrer ---
+Data\Classic\Lehrer\Daten_Lehrer.lua
+Data\Classic\Lehrer\Daten_Lehrer_EN.lua
+Data\Classic\Lehrer\Daten_Lehrer_Zusatz.lua
+Data\Classic\Lehrer\Daten_Lehrer_Zusatz_EN.lua
+
+# --- Classic: Rezept-Fundorte ---
+Data\Classic\Fundorte\Daten_Fundorte_Alchimie.lua
+Data\Classic\Fundorte\Daten_Fundorte_Alchimie_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Verzauberkunst.lua
+Data\Classic\Fundorte\Daten_Fundorte_Verzauberkunst_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Ingenieurskunst.lua
+Data\Classic\Fundorte\Daten_Fundorte_Ingenieurskunst_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Schmiedekunst.lua
+Data\Classic\Fundorte\Daten_Fundorte_Schmiedekunst_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Lederverarbeitung.lua
+Data\Classic\Fundorte\Daten_Fundorte_Lederverarbeitung_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Schneidern.lua
+Data\Classic\Fundorte\Daten_Fundorte_Schneidern_EN.lua
+Data\Classic\Fundorte\Daten_Fundorte_Kochkunst.lua
+Data\Classic\Fundorte\Daten_Fundorte_Kochkunst_EN.lua
+
+# --- WoW Forever: Guides + Rezept-Fundorte ---
+Data\Forever\Daten_Forever_Guides.lua
+Data\Forever\Daten_Forever_Fundorte.lua
+Data\Forever\Daten_Forever_Fundorte_EN.lua
+Data\Forever\Daten_Forever_ErsteHilfe.lua
+Data\Forever\Daten_Forever_Bergbau.lua
+Data\Forever\Daten_Forever_Kraeuterkunde.lua
+
+## Spielversions-Umschalter (MUSS nach allen Data-Dateien stehen!)
+Spielversion.lua
 
 ## ============================================================================
 ## 4. INTERFACE-MODULE & SUBSYSTEME
 ## ============================================================================
 MainUI.lua
-Search\ScrollFrame.lua
+UI\Karten.lua
 Search\Search.lua
 Sidebar\Sidebar.lua
 Options\Options.lua
 GoldPlaner\GoldPlaner.lua
+Wegpunkt.lua
+Berufefenster.lua
 MatIcons.lua
 Debug.lua
 Simulation.lua
 Inspector.lua
+BugReport.lua
 
 ## ============================================================================
 ## 5. SLASH-COMMANDS (MUSS NACH DEN OBEN GELADENEN MODULEN STEHEN!)

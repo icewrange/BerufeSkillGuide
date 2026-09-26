@@ -28,58 +28,7 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
 
     local title = mainFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", titleBg, "LEFT", 15, 0)
-    title:SetText("|cffffd100Berufe Skill Guide|r")
-
-    -- ========================================================================
-    -- 1b. DATENBANK-STATUS-BADGE
-    -- ========================================================================
-    -- Zeigt das Ergebnis des stillen Inspector-Checks vom Login (siehe
-    -- BSG_Core.lua -> BSG_Inspector.PruefeAlleStumm) als kleines Symbol neben
-    -- dem Titel: grüner Haken = Datenbank geprüft & sauber, oranges Ausrufe-
-    -- zeichen = es wurden Probleme gefunden. Klick öffnet die ausführliche
-    -- Prüfung im Chat (wie /bsg check).
-    local dbBadge = CreateFrame("Button", "BSG_MainUI_DBBadge", mainFrame)
-    dbBadge:SetSize(16, 16)
-    dbBadge:SetPoint("LEFT", title, "RIGHT", 8, 0)
-
-    local dbBadgeText = dbBadge:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    dbBadgeText:SetAllPoints(dbBadge)
-
-    local function AktualisiereDBBadge()
-        local ergebnis = BSG_Inspector and BSG_Inspector.LetzterCheck
-        if not ergebnis then
-            dbBadgeText:SetText("|cff888888?|r")
-            dbBadge.tooltipText = "Datenbank noch nicht geprüft."
-        elseif ergebnis.ok then
-            dbBadgeText:SetText("|cff00ff00✓|r")
-            dbBadge.tooltipText = string.format(
-                "|cff00ff00Datenbank geprüft:|r %d Berufe, keine Probleme gefunden.\nKlicken für erneuten Check (/bsg check).",
-                ergebnis.anzahlBerufe
-            )
-        else
-            dbBadgeText:SetText("|cffff8800!|r")
-            dbBadge.tooltipText = string.format(
-                "|cffff8800Datenbank geprüft:|r %d Problem(e) gefunden.\nKlicken für Details (/bsg check).",
-                ergebnis.anzahlProbleme
-            )
-        end
-    end
-
-    dbBadge:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(self.tooltipText or "Datenbank-Status", 1, 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    dbBadge:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    dbBadge:SetScript("OnClick", function()
-        if BSG_Inspector and BSG_Inspector.PruefeAlle then
-            BSG_Inspector.PruefeAlle()
-        end
-        AktualisiereDBBadge()
-    end)
-
-    AktualisiereDBBadge()
-    BSG_MainUI.AktualisiereDBBadge = AktualisiereDBBadge
+    title:SetText("|cffffd100" .. ((BSG_Locale and BSG_Locale.TITLE) or "Berufe Skill Guide") .. "|r")
 
     -- Schließen-Button (rotes X, oben rechts)
     local closeBtn = CreateFrame("Button", "BSG_MainUI_CloseBtn", mainFrame, "UIPanelCloseButton")
@@ -90,12 +39,25 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
     local optionsBtn = CreateFrame("Button", "BSG_MainUI_OptionsBtn", mainFrame, "UIPanelButtonTemplate")
     optionsBtn:SetSize(80, 22)
     optionsBtn:SetPoint("RIGHT", closeBtn, "LEFT", -6, 0)
-    optionsBtn:SetText("Optionen")
+    optionsBtn:SetText((BSG_Locale and BSG_Locale.OPTIONS) or "Optionen")
     optionsBtn:SetScript("OnClick", function()
         if BSG_Options and BSG_Options.ToggleOptionen then
             BSG_Options.ToggleOptionen()
         end
     end)
+
+    -- NEU: Spielversions-Umschalter (Classic <-> WoW Forever) im
+    -- AtlasLoot-Stil, links neben dem Optionen-Button.
+    if BSG_Spielversion and BSG_Spielversion.ErstelleButton then
+        BSG_Spielversion.ErstelleButton(mainFrame, optionsBtn)
+        -- Titel darf nicht unter den Button laufen (z.B. der längere
+        -- englische Titel) -> rechts begrenzen, notfalls mit "..." kürzen.
+        if BSG_Spielversion.Button then
+            title:SetPoint("RIGHT", BSG_Spielversion.Button, "LEFT", -6, 0)
+            title:SetJustifyH("LEFT")
+            title:SetWordWrap(false)
+        end
+    end
 
     -- ========================================================================
     -- 2. REZEPT-SUCHFELD
@@ -108,7 +70,7 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
 
     searchBox.placeholder = searchBox:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     searchBox.placeholder:SetPoint("LEFT", searchBox, "LEFT", 4, 0)
-    searchBox.placeholder:SetText("Rezept suchen...")
+    searchBox.placeholder:SetText((BSG_Locale and BSG_Locale.SEARCH_PLACEHOLDER) or "Rezept suchen...")
 
     searchBox:SetScript("OnEditFocusGained", function(self)
         self.placeholder:Hide()
@@ -131,7 +93,7 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
     -- ========================================================================
     local skillLabel = mainFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     skillLabel:SetPoint("LEFT", searchBox, "RIGHT", 12, 0)
-    skillLabel:SetText("Skill:")
+    skillLabel:SetText((BSG_Locale and BSG_Locale.SKILL_LABEL) or "Skill:")
 
     local skillBox = CreateFrame("EditBox", "BSG_MainUI_SkillBox", mainFrame, "InputBoxTemplate")
     skillBox:SetSize(40, 20)
@@ -147,10 +109,11 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
     local function ZeigeManuelleSkillStufe()
         local eingabe = tonumber(skillBox:GetText())
         if not eingabe then
-            print("|cffff5500[BSG]:|r Bitte eine gültige Skill-Zahl eingeben (1-300).")
+            print("|cffff5500[BSG]:|r " .. string.format((BSG_Locale and BSG_Locale.INVALID_SKILL_INPUT) or "Bitte eine gültige Skill-Zahl eingeben (1-%d).", BSG_Skillstufen.MaxSkill()))
             return
         end
-        eingabe = math.max(1, math.min(300, math.floor(eingabe)))
+        -- Maximum hängt von der Spielversion ab (BSG_Skillstufen.lua)
+        eingabe = BSG_Skillstufen.Begrenze(eingabe)
 
         -- Nutzt den zuletzt angezeigten Beruf (z.B. per Sidebar-Klick
         -- gewählt oder beim Login automatisch erkannt) als Kontext dafür,
@@ -170,7 +133,7 @@ function BSG_MainUI.InitialisiereUI(mainFrame)
     local searchBtn = CreateFrame("Button", "BSG_MainUI_SearchBtn", mainFrame, "UIPanelButtonTemplate")
     searchBtn:SetSize(60, 22)
     searchBtn:SetPoint("LEFT", skillBox, "RIGHT", 8, 0)
-    searchBtn:SetText("Suchen")
+    searchBtn:SetText((BSG_Locale and BSG_Locale.SEARCH_BUTTON) or "Suchen")
     searchBtn:SetScript("OnClick", ZeigeManuelleSkillStufe)
 
     -- Kompatibilität: Sidebar.lua schreibt den ECHTEN Skill beim Klick auf

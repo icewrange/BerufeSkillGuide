@@ -1,0 +1,36 @@
+-- ============================================================================
+-- DATABASE: WOW FOREVER - SKILL GUIDES & LEHRER
+-- ============================================================================
+-- Wird aktiv, wenn oben im Fenster der Spielversions-Button auf "FOREVER"
+-- steht. Für jeden Beruf, der hier eingetragen ist, wird DIESER Guide statt
+-- des Classic-Guides angezeigt. Für jeden Beruf, der hier FEHLT, zeigt das
+-- Addon automatisch den Classic-Guide (mit einem blauen Hinweis) - die
+-- Vanilla-Rezepte gibt es in Forever weiterhin.
+--
+-- FORMAT: exakt wie in Data\Classic\Guides\Daten_Alchimie.lua usw.
+--   minSkill / maxSkill : Skill-Spanne des Schritts
+--   item                : empfohlene Gesamt-Stückzahl + Name (z.B. "ca. 40 Rauer Wetzstein")
+--   mats                : Material für EINE Herstellung, kommagetrennt
+--                         ("2 Leinenstoff, 1 Grobes Garn")
+-- Materialnamen sollten zu den Keys in Data\Allgemein\Daten_Items.lua passen, damit
+-- Icons und Bestandsanzeige funktionieren.
+--
+-- Beispiel (auskommentiert - Werte bitte nach Forever-Launch prüfen):
+--
+-- if GetLocale() == "deDE" then
+--     BerufeGuideDB_Forever["Alchimie"] = {
+--         { minSkill = 1,  maxSkill = 60,  item = "ca. 59 Schwacher Heiltrank", mats = "1 Friedensblume, 1 Silberblatt, 1 Leere Phiole" },
+--         ...
+--     }
+--     BerufeLehrerDB_Forever["Alchimie"] = {
+--         { stufe = "Lehrling (1-75)", standorte = "Allianz: ...\nHorde: ..." },
+--     }
+-- else
+--     -- englische Namen für alle anderen Clients
+-- end
+--
+-- Neue Forever-Berufe (z.B. "Erste Hilfe") brauchen zusätzlich einen Eintrag
+-- in API.lua (BERUFSNAMEN_KANONISCH) und in der Sidebar-Berufsliste.
+
+BerufeGuideDB_Forever  = BerufeGuideDB_Forever  or {}
+BerufeLehrerDB_Forever = BerufeLehrerDB_Forever or {}

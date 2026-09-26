@@ -71,7 +71,7 @@ local function ErstelleMinimapButton(toggleCallback)
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine("|cffffffffBerufeSkillGuide|r")
-        GameTooltip:AddLine("|cff00ffffKlicken, um den Guide zu öffnen.|r")
+        GameTooltip:AddLine("|cff00ffff" .. ((BSG_Locale and BSG_Locale.MINIMAP_TOOLTIP) or "Klicken, um den Guide zu öffnen.") .. "|r")
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -129,7 +129,7 @@ function BSG_Options.InitialisiereOptionen(mainFrame, toggleCallback)
 
     local cbText = cfg:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     cbText:SetPoint("LEFT", cb, "RIGHT", 10, 0)
-    cbText:SetText("Minimap-Button anzeigen")
+    cbText:SetText((BSG_Locale and BSG_Locale.SHOW_MINIMAP_BUTTON) or "Minimap-Button anzeigen")
 
     cb:SetScript("OnShow", function(self) 
         self:SetChecked(not BerufeSkillGuideDB.minimap.hide) 
@@ -178,7 +178,11 @@ function BSG_Options.InitialisiereOptionen(mainFrame, toggleCallback)
     slider:SetScript("OnShow", function(self) self:SetValue(BerufeSkillGuideDB.frameAlpha) end)
     slider:SetScript("OnValueChanged", function(self, value) 
         BerufeSkillGuideDB.frameAlpha = value 
-        mainFrame:SetBackdropColor(0.08, 0.08, 0.1, value / 100) 
+        if BSG_Karten and BSG_Karten.SetzeAlpha then
+            BSG_Karten.SetzeAlpha(value)
+        else
+            mainFrame:SetBackdropColor(0.08, 0.08, 0.1, value / 100)
+        end
     end)
 
     BSG_Options.configFrame = cfg

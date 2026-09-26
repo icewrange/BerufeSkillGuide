@@ -11,7 +11,7 @@ function BSG.ErstelleHilfeFenster()
 
     -- Hauptrahmen für das Hilfe-Fenster (Passend zum flachen Core-Design)
     local f = CreateFrame("Frame", "BSG_HelpWindowFrame", UIParent, "BackdropTemplate")
-    f:SetSize(360, 220)
+    f:SetSize(360, 330)
     f:SetPoint("CENTER", UIParent, "CENTER", 40, 40)
     f:SetMovable(true)
     f:EnableMouse(true)
@@ -57,8 +57,14 @@ function BSG.ErstelleHilfeFenster()
     inhalt = inhalt .. "|cffffd100/bsg help|r  -  Öffnet diese Befehlsübersicht\n"
     inhalt = inhalt .. "|cffffd100/bsg optionen|r  -  Öffnet das Einstellungsmenü\n"
     inhalt = inhalt .. "|cffffd100/bsg debug|r  -  Schaltet den Debug-Modus um\n"
-    inhalt = inhalt .. "|cffffd100/bsg sim <Beruf> <Skill>|r  -  Simulationsmodus"
-    
+    inhalt = inhalt .. "|cffffd100/bsg sim <Beruf> <Skill>|r  -  Simulationsmodus\n"
+    inhalt = inhalt .. "|cffffd100/bsg version|r  -  Classic / WoW Forever umschalten\n"
+    inhalt = inhalt .. "|cffffd100/bsg auswahl|r  -  Auto-Auswahl im Berufefenster an/aus\n"
+    inhalt = inhalt .. "|cffffd100/bsg gold|r  -  AH-Kosten für den aktuellen Schritt\n"
+    inhalt = inhalt .. "|cffffd100/bsg wo <Material>|r  -  Bestand je Charakter anzeigen\n"
+    inhalt = inhalt .. "|cffffd100/bsg check [Beruf]|r  -  Datenbank-Inspektor\n"
+    inhalt = inhalt .. "|cffffd100/bsg bugreport [Text]|r  -  Bug-Report erstellen"
+
     helpText:SetText(inhalt)
 
     bsgHelpWindow = f

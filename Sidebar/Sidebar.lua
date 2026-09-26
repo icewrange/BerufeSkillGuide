@@ -9,8 +9,9 @@
 --
 -- Zusammengeführte Änderungen:
 --   * FIX (Hitbox/Interaktion, aus BerufeSkillGuide.lua V4.4):
---       - bgFrame/tBtn/Buttons auf Strata "DIALOG" angehoben, damit die
---         Sidebar zuverlässig klickbar über dem Hauptfenster liegt.
+--       - (V4.6) bgFrame/tBtn sind jetzt Kinder des Hauptfensters und erben
+--         dessen Strata - vorher "DIALOG", wodurch die Sidebar über der
+--         Weltkarte lag.
 --       - Unsichtbare Hit-Textur auf bgFrame, um Klicks im Hintergrund
 --         sicher abzufangen.
 --       - btn:RegisterForClicks("LeftButtonUp") für präzisere Klick-
@@ -38,15 +39,12 @@ local UPDATE_INTERVAL = 0.1
 -- BERUFE
 -- ============================================================================
 
-local berufsListe = {
-    { name = "Alchimie",          icon = "interface\\icons\\trade_alchemy" },
-    { name = "Schmiedekunst",     icon = "interface\\icons\\trade_blacksmithing" },
-    { name = "Ingenieurskunst",   icon = "interface\\icons\\trade_engineering" },
-    { name = "Lederverarbeitung", icon = "interface\\icons\\trade_leatherworking" },
-    { name = "Schneidern",        icon = "interface\\icons\\trade_tailoring" },
-    { name = "Verzauberkunst",    icon = "interface\\icons\\spell_nature_lightning" },
-    { name = "Kochkunst",         icon = "interface\\icons\\inv_misc_food_15" }
-}
+-- (v2.1) Zentrale Liste aus BSG_Berufe.lua (inkl. Erste Hilfe und
+-- Sammelberufe). Neue Berufe nur noch dort eintragen.
+local berufsListe = {}
+for _, b in ipairs(BSG_Berufe.LISTE) do
+    table.insert(berufsListe, { name = b.name, icon = b.icon })
+end
 
 -- ============================================================================
 -- ECHTER SKILL & "GELERNT"-PRÜFUNG ÜBER GetSkillLineInfo (NICHT IsSpellKnown)
@@ -61,13 +59,10 @@ local berufsListe = {
 -- beim Login bereits erfolgreich GetSkillLineInfo() (Namens-Abgleich statt
 -- Spell-ID). Hier wird jetzt exakt dieselbe, bewährte Methode verwendet.
 local function ErmittleEchtenSkill(berufName)
-    for i = 1, GetNumSkillLines() do
-        local sName, _, _, sRank = GetSkillLineInfo(i)
-        if not sName then break end
-        if sName == berufName or (berufName == "Alchimie" and sName == "Alchemie") then
-            return sRank or 1
-        end
-    end
+    -- Forever-kompatibel über BSG_Compat (Compat.lua); nutzt intern
+    -- BSG_API.KanonischerBerufsname, funktioniert also auch auf Englisch.
+    local rank = BSG_Compat.HoleBerufsSkill(berufName)
+    if rank then return rank or 1 end
     return nil
 end
 
@@ -137,13 +132,13 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
     local bgFrame = CreateFrame(
         "Frame",
         "BSG_Sidebar_Background",
-        UIParent,
+        mainFrame,
         "BackdropTemplate"
     )
 
-    -- Höhe vergrößert: Platz für Filter-Button oben + jetzt 7 statt 6
-    -- Berufs-Icons (Kochkunst neu hinzugekommen).
-    bgFrame:SetSize(40, 300)
+    -- Höhe wächst automatisch mit der Anzahl der Berufe:
+    -- 30px Filter-Button oben + 38px je Berufs-Icon + 4px Rand.
+    bgFrame:SetSize(40, 30 + (#berufsListe * 38) + 4)
 
     bgFrame:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
@@ -154,10 +149,13 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
     bgFrame:SetBackdropColor(0.05, 0.05, 0.07, 0.95)
     bgFrame:SetBackdropBorderColor(0.18, 0.18, 0.22, 1)
 
-    -- Hohe Schichtung + Mauseingabe erzwingen, damit die Sidebar zuverlässig
-    -- über dem Hauptfenster liegt und klickbar bleibt.
-    bgFrame:SetFrameStrata("DIALOG")
-    bgFrame:SetFrameLevel(150)
+    -- FIX (Weltkarte): Die Sidebar hing vorher an UIParent mit fester Strata
+    -- "DIALOG" und lag dadurch VOR der Weltkarte (Strata "HIGH"), während das
+    -- Hauptfenster (MEDIUM) korrekt dahinter verschwand. Jetzt ist die
+    -- Sidebar ein Kind des Hauptfensters: gleiche Strata, Frame-Level relativ
+    -- zum Hauptfenster -> sie liegt immer genau so weit vorne/hinten wie das
+    -- Guide-Fenster selbst (Karte, Taschen, andere Fenster).
+    bgFrame:SetFrameLevel(mainFrame:GetFrameLevel() + 10)
     bgFrame:EnableMouse(true)
 
     -- Unsichtbare Hintergrundtextur, um Klicks physikalisch abzufangen.
@@ -174,7 +172,7 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
     local tBtn = CreateFrame(
         "Button",
         "BSG_Sidebar_ToggleBtn",
-        UIParent,
+        mainFrame,
         "BackdropTemplate"
     )
 
@@ -188,8 +186,7 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
 
     tBtn:SetBackdropColor(0.12, 0.12, 0.15, 1)
     tBtn:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
-    tBtn:SetFrameStrata("DIALOG")
-    tBtn:SetFrameLevel(160)
+    tBtn:SetFrameLevel(mainFrame:GetFrameLevel() + 12)
     tBtn:EnableMouse(true)
 
     tBtn.text = tBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -228,7 +225,6 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
 
     filterBtn:SetSize(32, 20)
     filterBtn:SetPoint("TOPLEFT", bgFrame, "TOPLEFT", 4, -4)
-    filterBtn:SetFrameStrata("DIALOG")
     filterBtn:SetFrameLevel(bgFrame:GetFrameLevel() + 5)
     filterBtn:EnableMouse(true)
     filterBtn:RegisterForClicks("LeftButtonUp")
@@ -243,16 +239,16 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
 
     filterBtn.text = filterBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     filterBtn.text:SetPoint("CENTER", 0, 0)
-    filterBtn.text:SetText("Alle")
+    filterBtn.text:SetText((BSG_Locale and BSG_Locale.FILTER_ALL) or "Alle")
     filterBtn.text:SetTextColor(0.8, 0.8, 0.8)
 
     filterBtn:SetScript("OnEnter", function(self)
         self:SetBackdropBorderColor(1, 0.82, 0, 1)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         if BSG_Sidebar.NurGelernteAnzeigen then
-            GameTooltip:SetText("Zeigt nur erlernte Berufe.\nKlicken, um alle 6 Berufe zu zeigen.", 1, 1, 1)
+            GameTooltip:SetText(string.format((BSG_Locale and BSG_Locale.FILTER_TOOLTIP_TO_ALL) or "Zeigt nur erlernte Berufe.\nKlicken, um alle %d Berufe zu zeigen.", #berufsListe), 1, 1, 1)
         else
-            GameTooltip:SetText("Zeigt alle 6 Berufe.\nKlicken, um nur erlernte Berufe zu zeigen.", 1, 1, 1)
+            GameTooltip:SetText(string.format((BSG_Locale and BSG_Locale.FILTER_TOOLTIP_TO_LEARNED) or "Zeigt alle %d Berufe.\nKlicken, um nur erlernte Berufe zu zeigen.", #berufsListe), 1, 1, 1)
         end
         GameTooltip:Show()
     end)
@@ -263,7 +259,10 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
 
     filterBtn:SetScript("OnClick", function(self)
         BSG_Sidebar.NurGelernteAnzeigen = not BSG_Sidebar.NurGelernteAnzeigen
-        self.text:SetText(BSG_Sidebar.NurGelernteAnzeigen and "Gelernt" or "Alle")
+        local anzeigeText = BSG_Sidebar.NurGelernteAnzeigen
+            and ((BSG_Locale and BSG_Locale.FILTER_LEARNED) or "Gelernt")
+            or ((BSG_Locale and BSG_Locale.FILTER_ALL) or "Alle")
+        self.text:SetText(anzeigeText)
         BSG_Sidebar.AktualisiereButtonSichtbarkeit()
     end)
 
@@ -341,8 +340,7 @@ function BSG_Sidebar.InitialisiereSidebar(mainFrame)
             startY - ((index - 1) * abstandY)
         )
 
-        -- Buttons ebenfalls auf DIALOG-Strata, damit sie über allem liegen.
-        btn:SetFrameStrata("DIALOG")
+        -- Frame-Level relativ zur Leiste (Strata wird vom Hauptfenster geerbt).
         btn:SetFrameLevel(bgFrame:GetFrameLevel() + 5)
         btn:EnableMouse(true)
         btn:RegisterForClicks("LeftButtonUp")

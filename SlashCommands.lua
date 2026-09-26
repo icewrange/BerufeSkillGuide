@@ -11,22 +11,9 @@ local BSG = BerufeSkillGuide
 
 -- Berufsnamen-Normalisierung: "Alchemie" (wie in Befehlsliste.txt erwähnt)
 -- wird auf den tatsächlichen Datenbank-Key "Alchimie" abgebildet.
-local BERUF_ALIASE = {
-    ["alchimie"] = "Alchimie",
-    ["alchemie"] = "Alchimie",
-    ["schmiedekunst"] = "Schmiedekunst",
-    ["ingenieurskunst"] = "Ingenieurskunst",
-    ["lederverarbeitung"] = "Lederverarbeitung",
-    ["schneidern"] = "Schneidern",
-    ["verzauberkunst"] = "Verzauberkunst",
-    ["kochkunst"] = "Kochkunst",
-    ["kochen"] = "Kochkunst",
-    -- NEU: "Erste Hilfe" besteht aus zwei Wörtern, ParseSimArgument kann aber
-    -- nur ein einzelnes Wort vor der Zahl erkennen (%a+). Deshalb bekommt der
-    -- Beruf hier einen einwortigen Alias, der auf den echten Datenbank-Key
-    -- (mit Leerzeichen) abgebildet wird.
-    ["erstehilfe"] = "Erste Hilfe",
-}
+-- (v2.1) Aliase kommen aus der zentralen Liste BSG_Berufe.lua
+-- (deutsch, englisch, ohne Umlaute/Leerzeichen, Kurzformen).
+local BERUF_ALIASE = BSG_Berufe.ALIASE
 
 -- Versucht "sim Schneidern 150" UND "sim Schneidern150" (ohne Leerzeichen)
 -- zu erkennen, wie in Befehlsliste.txt als Schnellschreibweise beschrieben.
@@ -42,19 +29,17 @@ local function ParseSimArgument(rest)
         return "off", nil
     end
 
-    -- Variante 1: "Beruf Zahl" (mit Leerzeichen getrennt)
-    local berufTeil, zahlTeil = rest:match("^(%a+)%s+(%d+)$")
-
-    -- Variante 2: "BerufZahl" (ohne Leerzeichen, Zahl direkt angehängt)
-    if not berufTeil then
-        berufTeil, zahlTeil = rest:match("^(%a+)(%d+)$")
-    end
+    -- "Beruf Zahl" oder "BerufZahl" - der Beruf darf jetzt auch Leerzeichen
+    -- und Umlaute enthalten ("Erste Hilfe 120", "Kräuterkunde150").
+    local berufTeil, zahlTeil = rest:match("^(.-)%s*(%d+)$")
+    if berufTeil then berufTeil = berufTeil:gsub("%s+$", "") end
+    if berufTeil == "" then berufTeil = nil end
 
     if not berufTeil or not zahlTeil then
         return nil, nil
     end
 
-    local berufKey = BERUF_ALIASE[berufTeil:lower()]
+    local berufKey = BERUF_ALIASE[berufTeil:lower()] or BERUF_ALIASE[(berufTeil:lower():gsub("%s", ""))]
     if not berufKey then
         return nil, nil
     end
@@ -107,6 +92,69 @@ SlashCmdList["BSG"] = function(msg)
             end
         else
             print("|cffff5500[BSG]:|r Ungültige Eingabe. Nutzung: |cffffd100/bsg sim <Beruf> <Skill>|r oder |cffffd100/bsg sim off|r")
+        end
+
+    elseif befehl == "version" then
+        -- NEU: /bsg version [classic|forever] - gleiche Funktion wie der
+        -- Spielversions-Button in der Titelleiste.
+        local ziel = (rest or ""):lower():gsub("%s", "")
+        if ziel == "classic" or ziel == "forever" then
+            BSG_Spielversion.Setze(ziel)
+        elseif ziel == "" then
+            BSG_Spielversion.Setze(BSG_Spielversion.IstForever() and "classic" or "forever")
+        else
+            print("|cffff5500[BSG]:|r Nutzung: |cffffd100/bsg version|r (umschalten) oder |cffffd100/bsg version classic|forever|r")
+        end
+
+    elseif befehl == "auswahl" or befehl == "autoselect" then
+        -- NEU (v2.1): Auto-Auswahl des Guide-Rezepts im Berufefenster an/aus
+        if BSG_Berufefenster and BSG_Berufefenster.ToggleAutoAuswahl then
+            BSG_Berufefenster.ToggleAutoAuswahl()
+        end
+
+    elseif befehl == "gold" then
+        -- NEU: Berechnet die AH-Gesamtkosten für ALLE Materialien, die der
+        -- aktuell im Guide-Fenster angezeigte Skill-Schritt noch braucht
+        -- (BSG_Search.LetzteGesamtBedarf, wird bei jeder Guide-Anzeige neu
+        -- befüllt). Muss bei geöffnetem Auktionshaus ausgeführt werden.
+        if BSG_GoldPlaner and BSG_GoldPlaner.BerechneGesamtkosten then
+            BSG_GoldPlaner.BerechneGesamtkosten(BSG_Search and BSG_Search.LetzteGesamtBedarf)
+        end
+
+    elseif befehl == "wo" then
+        -- NEU: Zeigt für ein beliebiges Material den Cross-Char-Bestand im
+        -- Chat an (nutzt denselben Datensatz wie der Tooltip auf den
+        -- Material-Icons, funktioniert aber für JEDES Material, nicht nur
+        -- für die des aktuell angezeigten Guide-Schritts).
+        if not rest or not rest:match("%S") then
+            print("|cffff5500[BSG]:|r Nutzung: |cffffd100/bsg wo <Materialname>|r (z.B. /bsg wo Leinenstoff)")
+        elseif BSG_API and BSG_API.GetItemCountByCharacter then
+            local materialName = rest:gsub("^%l", string.upper)
+            local verteilung = BSG_API.GetItemCountByCharacter(materialName)
+            local charNamen = {}
+            local gesamt = 0
+            for charName, anzahl in pairs(verteilung) do
+                table.insert(charNamen, charName)
+                gesamt = gesamt + anzahl
+            end
+
+            if gesamt > 0 then
+                table.sort(charNamen, function(a, b) return verteilung[a] > verteilung[b] end)
+                print(string.format("|cff00ff00[BSG]:|r %s - Gesamtbestand: %d", materialName, gesamt))
+                for _, charName in ipairs(charNamen) do
+                    print(string.format("   |cffcccccc%s:|r %d", charName, verteilung[charName]))
+                end
+            else
+                print(string.format("|cffff5500[BSG]:|r %s liegt auf keinem gescannten Charakter.", materialName))
+            end
+        end
+
+    elseif befehl == "bugreport" then
+        -- NEU: Öffnet ein Fenster mit einem fertigen, kopierbaren Diagnose-
+        -- Text (Version, Build, Locale, zuletzt erfasste Lua-Fehler, sowie
+        -- optional die nach "bugreport" eingegebene Beschreibung).
+        if BSG_BugReport and BSG_BugReport.OeffneReport then
+            BSG_BugReport.OeffneReport(rest)
         end
 
     elseif befehl == "check" then

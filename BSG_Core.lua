@@ -14,6 +14,9 @@ function BSG.ErstelleHauptfenster()
     f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     f:SetMovable(true)
     f:EnableMouse(true)
+    -- Klick ins Fenster holt es (samt Sidebar) vor andere Fenster derselben Ebene
+    f:SetToplevel(true)
+    f:SetFrameStrata("MEDIUM")
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
@@ -49,13 +52,6 @@ initFrame:SetScript("OnEvent", function(self, event, ...)
     
     -- 1. Hauptfenster physisch im Spiel aufbauen
     BSG.ErstelleHauptfenster()
-
-    -- 1b. Datenbank-Inspector still im Hintergrund laufen lassen (kein
-    --     Chat-Spam), damit die Kopfzeile (MainUI.lua) direkt ein
-    --     "Datenbank geprüft"-Badge zeigen kann.
-    if _G["BSG_Inspector"] and _G["BSG_Inspector"].PruefeAlleStumm then
-        _G["BSG_Inspector"].PruefeAlleStumm()
-    end
 
     -- 2. Kopfzeile aufbauen: Titel, Rezept-Suchfeld, manuelle Skill-Eingabe,
     --    Optionen-Button, Schließen-Button

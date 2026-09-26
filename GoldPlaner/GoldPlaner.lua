@@ -1,32 +1,6 @@
 -- ============================================================================
--- GOLD-PLANER MODUL V5.6 (BLIZZARD-AH-LIVESCAN + AUCTIONATOR + TSM-FALLBACK)
+-- GOLD-PLANER MODUL V5.5 (REINES REALTIME BLIZZARD-AH SCANSYSTEM)
 -- ============================================================================
--- NEU in V5.6: Auctionator wird jetzt als zusätzliche Preisquelle genutzt.
--- API: Auctionator.API.v1.GetAuctionPriceByItemLink(callerID, itemLink)
---   - Erwartet zwei Strings: einen Aufrufer-Namen und einen echten Item-Link
---     (NICHT nur den Item-Namen!). Wir holen den Link uns selbst über
---     GetItemInfo(matsName) - Rückgabewert 2 ist der itemLink (Rückgabewert
---     1 wäre der Name), analog zum bereits in MatIcons.lua verwendeten
---     Muster GetItemInfo(materialName).
---   - Liefert den Preis (in Kupfer) aus Auctionators EIGENER, dauerhaft
---     gespeicherter Preisdatenbank (SavedVariable AUCTIONATOR_PRICE_DATABASE)
---     zurück oder nil, wenn keine Daten vorhanden sind. Das Auktionshaus muss
---     dafür NICHT geöffnet sein - Auctionator synchronisiert seine Datenbank
---     bei jedem AH-Besuch im Hintergrund.
---   - Quelle: Auctionators eigene interne Fehlermeldung bei falscher Nutzung
---     ("Usage Auctionator.API.v1.GetAuctionPriceByItemLink(string, string)",
---     GitHub-Issue TheMouseNest/Auctionator #1209) sowie der Aufruf-Stil der
---     bereits bestätigten Schwester-Funktion GetVendorPriceByItemLink im
---     selben API-Namespace. Der genaue Rückgabewert (Zahl in Kupfer bei
---     Erfolg, nil sonst) folgt der Namenskonvention & dem Verhalten von
---     GetVendorPriceByItemLink und ist WoW-Addon-Konvention, aber nicht aus
---     dem Quellcode selbst einsehbar gewesen - bitte in der Praxis
---     gegenprüfen, falls sich das Verhalten anders zeigt.
---
--- Da Auctionator (anders als der reine Blizzard-Live-Scan) keine geöffnete
--- Auktionshaus-Ansicht braucht, wurde das bisherige harte "Auktionshaus
--- nicht geöffnet"-Abbruchschloss gelockert: Es blockiert jetzt nur noch
--- SCHRITT 1 (Blizzard-Live-Scan), nicht mehr die komplette Funktion.
 BSG_GoldPlaner = {}
 
 BSG_GoldPlaner.AuktionshausOffen = false
@@ -54,72 +28,52 @@ local function FormatierungsKupfer(gesamtKupfer)
     return ergebnis
 end
 
-function BSG_GoldPlaner.OeffnePlaner(matsName, anzahl)
-    if not matsName or not anzahl then return end
-    local korrigierterName = matsName:gsub("^%l", string.upper)
-
-    -- SICHERHEITS-SCHLOSS (gelockert seit V5.6): Der reine Blizzard-Live-Scan
-    -- (SCHRITT 1) braucht weiterhin ein offenes AH-Fenster, aber Auctionator
-    -- und TSM lesen aus ihrer eigenen, dauerhaft gespeicherten Preisdatenbank
-    -- und funktionieren AUCH ohne offenes Auktionshaus. Daher bricht die
-    -- Funktion nicht mehr komplett ab, sondern überspringt nur SCHRITT 1.
-    local auktionshausOffen = AuctionFrame and AuctionFrame:IsVisible()
-    if not auktionshausOffen then
-        print("|cffff5500[BSG-GoldPlaner]:|r |cff888888Auktionshaus nicht geöffnet - überspringe Live-Scan, nutze Auctionator/TSM-Preisdatenbank.|r")
+-- Sucht den günstigsten Stückpreis für ein Material: zuerst live im
+-- geöffneten Blizzard-AH-Suchfenster, dann als Sicherheitsnetz über TSM
+-- (falls installiert), zuletzt ein grober Notfall-Schätzwert. Gibt
+-- (stueckPreisInKupfer, scanMethodeAlsText) zurück, oder (nil, nil) wenn
+-- das Auktionshaus nicht geöffnet ist.
+-- FIX/NEU: War zuvor direkt in OeffnePlaner eingebettet und konnte daher
+-- nur für EIN Material auf einmal genutzt werden. Jetzt eigenständig, damit
+-- auch BerechneGesamtkosten() (Scan mehrerer Materialien am Stück) dieselbe
+-- Logik wiederverwenden kann.
+local function ErmittleGuenstigstenPreis(matsName)
+    -- Forever-kompatibel: altes (AuctionFrame) ODER neues AH (AuctionHouseFrame)
+    if not BSG_Compat.IstAuktionshausOffen() then
+        return nil, nil
     end
 
+    local korrigierterName = matsName:gsub("^%l", string.upper)
     local finalerPreis = 0
     local scanMethode = ""
 
     -- SCHRITT 1: Wir scannen das Blizzard-Standardfenster direkt auf deinem Bildschirm ab!
-    if auktionshausOffen then
-        local suchNameKlein = matsName:lower()
-        local anzahlAuktionen = GetNumAuctionItems("browse")
+    local suchNameKlein = matsName:lower()
+    -- Nur das alte Classic-AH erlaubt das direkte Auslesen der Suchliste.
+    -- In Forever (neues AH) wird direkt mit TSM/Fallback weitergemacht.
+    local anzahlAuktionen = BSG_Compat.HatKlassischesAHBrowse() and GetNumAuctionItems("browse") or 0
 
-        -- KUGELSICHERER NUMMERN-CHECK: Verhindert den alten "compare number with function" Fehler komplett!
-        if type(anzahlAuktionen) == "number" and anzahlAuktionen > 0 then
-            for i = 1, anzahlAuktionen do
-                local name, _, count, _, _, _, _, _, _, buyoutPrice = GetAuctionItemInfo("browse", i)
+    -- KUGELSICHERER NUMMERN-CHECK: Verhindert den alten "compare number with function" Fehler komplett!
+    if type(anzahlAuktionen) == "number" and anzahlAuktionen > 0 then
+        for i = 1, anzahlAuktionen do
+            local name, _, count, _, _, _, _, _, _, buyoutPrice = GetAuctionItemInfo("browse", i)
 
-                if name and name:lower():find(suchNameKlein) and buyoutPrice and buyoutPrice > 0 and count and count > 0 then
-                    local stueckPreis = math.floor(buyoutPrice / count)
+            if name and name:lower():find(suchNameKlein) and buyoutPrice and buyoutPrice > 0 and count and count > 0 then
+                local stueckPreis = math.floor(buyoutPrice / count)
 
-                    -- Da das AH nach Preis sortiert ist, ist der allererste Treffer mit Sofortkauf der billigste!
-                    if stueckPreis > 0 then
-                        finalerPreis = stueckPreis
-                        scanMethode = "|cff00ff00Echtzeit Blizzard-Live-Blick|r"
-                        break -- Schleife sofort beenden, wir haben den Tiefstpreis!
-                    end
+                -- Da das AH nach Preis sortiert ist, ist der allererste Treffer mit Sofortkauf der billigste!
+                if stueckPreis > 0 then
+                    finalerPreis = stueckPreis
+                    scanMethode = "|cff00ff00Echtzeit Blizzard-Live-Blick|r"
+                    break -- Schleife sofort beenden, wir haben den Tiefstpreis!
                 end
             end
         end
     end
 
-    -- SCHRITT 2: Auctionator-Preisdatenbank (funktioniert ohne offenes AH!).
-    -- Wir brauchen dafür einen echten Item-Link statt nur den Namen - den
-    -- holen wir uns über GetItemInfo (Rückgabewert 2 = itemLink), analog zum
-    -- bereits in MatIcons.lua verwendeten GetItemInfo(materialName)-Muster.
-    if finalerPreis == 0 and Auctionator and Auctionator.API and Auctionator.API.v1
-       and Auctionator.API.v1.GetAuctionPriceByItemLink then
-        local _, itemLink = GetItemInfo(matsName)
-        if itemLink then
-            -- pcall als Sicherheitsnetz: Auctionator wirft bei falscher
-            -- Nutzung eigene Lua-Fehler statt nil zurückzugeben.
-            local erfolg, auctionatorPreis = pcall(Auctionator.API.v1.GetAuctionPriceByItemLink, "BerufeSkillGuide", itemLink)
-            if erfolg and auctionatorPreis and auctionatorPreis > 0 then
-                finalerPreis = auctionatorPreis
-                scanMethode = "|cff3fe1e8Auctionator-Preisdatenbank|r"
-            end
-        end
-    end
-
-    -- SCHRITT 3: Falls weiterhin nichts gefunden wurde, nutzen wir TSM als stabiles Sicherheitsnetz
+    -- SCHRITT 2: Falls das Suchfenster komplett leer war, nutzen wir TSM als stabiles Sicherheitsnetz
     if finalerPreis == 0 then
-        local itemID = nil
-        if korrigierterName == "Maguskönigskraut" then itemID = 3821
-        elseif korrigierterName == "Würgetang" then itemID = 3820
-        elseif korrigierterName == "Leere Phiole" then itemID = 3371
-        end
+        local itemID = (_G.BSG_ItemDB and _G.BSG_ItemDB[korrigierterName]) or nil
 
         if itemID and TSM_API then
             local tsmPreis = TSM_API.GetCustomPriceValue("DBMarket", "i:"..itemID)
@@ -135,12 +89,75 @@ function BSG_GoldPlaner.OeffnePlaner(matsName, anzahl)
         finalerPreis = 19
         scanMethode = "|cff888888Addon-Notfall-Fallback|r"
     end
-    
+
+    return finalerPreis, scanMethode
+end
+
+function BSG_GoldPlaner.OeffnePlaner(matsName, anzahl)
+    if not matsName or not anzahl then return end
+    local korrigierterName = matsName:gsub("^%l", string.upper)
+
+    local finalerPreis, scanMethode = ErmittleGuenstigstenPreis(matsName)
+
+    -- SICHERHEITS-SCHLOSS: Rechnet nur live am offenen AH-Fenster
+    if not finalerPreis then
+        print("|cffff5500[BSG-GoldPlaner]:|r |cffff0000Auktionshaus nicht geöffnet!|r")
+        print("|cff888888(Bitte sprich erst mit einem Auktionator, um die Live-Preise zu laden!)|r")
+        return
+    end
+
     local gesamtKupfer = finalerPreis * anzahl
     local formatiertEinzel = FormatierungsKupfer(finalerPreis)
     local formatiertGesamt = FormatierungsKupfer(gesamtKupfer)
-    
+
     print(string.format("|cff00ff00[BSG-GoldPlaner]:|r Scan abgeschlossen für |cffffff00%s|r (Methode: %s):", korrigierterName, scanMethode))
     print(string.format("   • AH-Preis pro Stück: %s", formatiertEinzel))
     print(string.format("   • Gesamtkosten für %dx: %s 💰", anzahl, formatiertGesamt))
+end
+
+-- NEU: Berechnet die Gesamtkosten für ALLE Materialien, die der aktuell im
+-- Guide-Fenster angezeigte Skill-Schritt noch benötigt (BSG_Search.
+-- LetzteGesamtBedarf), statt wie OeffnePlaner nur für ein einzelnes
+-- Material. Aufrufbar per Material-Icon-Klick (ein einzelnes Material)
+-- oder komplett per "/bsg gold" (alle Materialien des aktuellen Schritts).
+function BSG_GoldPlaner.BerechneGesamtkosten(materialienBedarf)
+    if not materialienBedarf or not next(materialienBedarf) then
+        print("|cffff5500[BSG-GoldPlaner]:|r Kein aktiver Guide-Schritt mit offenem Material-Bedarf gefunden.")
+        return
+    end
+
+    if not BSG_Compat.IstAuktionshausOffen() then
+        print("|cffff5500[BSG-GoldPlaner]:|r |cffff0000Auktionshaus nicht geöffnet!|r")
+        print("|cff888888(Bitte sprich erst mit einem Auktionator, um die Live-Preise zu laden!)|r")
+        return
+    end
+
+    print("|cff00ff00[BSG-GoldPlaner]:|r Gesamtkosten für den aktuellen Guide-Schritt:")
+
+    local gesamtKupferAlle = 0
+    local nichtGefunden = {}
+
+    -- Sortiert nach Namen, damit die Ausgabe bei jedem Aufruf gleich bleibt.
+    local namenSortiert = {}
+    for name in pairs(materialienBedarf) do table.insert(namenSortiert, name) end
+    table.sort(namenSortiert)
+
+    for _, name in ipairs(namenSortiert) do
+        local anzahl = materialienBedarf[name]
+        local stueckPreis, scanMethode = ErmittleGuenstigstenPreis(name)
+
+        if stueckPreis and stueckPreis > 0 and anzahl and anzahl > 0 then
+            local gesamtKupfer = stueckPreis * anzahl
+            gesamtKupferAlle = gesamtKupferAlle + gesamtKupfer
+            print(string.format("   • %dx %s: %s (%s)", anzahl, name, FormatierungsKupfer(gesamtKupfer), scanMethode))
+        else
+            table.insert(nichtGefunden, name)
+        end
+    end
+
+    if #nichtGefunden > 0 then
+        print("|cff888888   Keine Preisdaten gefunden für: " .. table.concat(nichtGefunden, ", ") .. "|r")
+    end
+
+    print(string.format("|cffffd100Gesamt (alle Materialien):|r %s 💰", FormatierungsKupfer(gesamtKupferAlle)))
 end

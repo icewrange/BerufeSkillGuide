@@ -18,10 +18,42 @@ function BSG_API.GetItemCount(itemName)
     
     -- Fallback: Falls dieser Charakter brandneu ist, zaehle seine Taschen direkt live
     if gesamtAnzahl == 0 then
-        gesamtAnzahl = GetItemCount(itemName) or 0
+        gesamtAnzahl = BSG_Compat.GetItemCount(itemName)
     end
     
     return gesamtAnzahl
+end
+
+-- NEU: Liefert den Bestand eines Materials AUFGESCHLÜSSELT NACH CHARAKTER
+-- zurück (z.B. {["Anduris"] = 12, ["Anduriswar"] = 8}), statt nur die Summe
+-- wie GetItemCount(). Damit kann die UI anzeigen, AUF WELCHEM Charakter ein
+-- fehlendes Material bereits liegt (z.B. um es per Post zu verschicken),
+-- statt nur "hast du insgesamt genug". Charaktere mit 0 werden nicht
+-- aufgeführt.
+function BSG_API.GetItemCountByCharacter(itemName)
+    local verteilung = {}
+    if not itemName then return verteilung end
+
+    if BerufeSkillGuideDB and BerufeSkillGuideDB.accountBestand then
+        for charName, daten in pairs(BerufeSkillGuideDB.accountBestand) do
+            local anzahl = daten[itemName]
+            if anzahl and anzahl > 0 then
+                verteilung[charName] = anzahl
+            end
+        end
+    end
+
+    -- Fallback: Noch gar kein gescannter Charakter vorhanden (z.B. ganz
+    -- frischer Login vor dem ersten automatischen Scan) -> zeige wenigstens
+    -- den live gezählten Bestand des aktuellen Charakters an.
+    if next(verteilung) == nil then
+        local liveAnzahl = BSG_Compat.GetItemCount(itemName, true)
+        if liveAnzahl > 0 and currentCharacterName then
+            verteilung[currentCharacterName] = liveAnzahl
+        end
+    end
+
+    return verteilung
 end
 
 -- Scannt den aktuellen Charakter und speichert alles felsenfest auf der Festplatte
@@ -53,7 +85,7 @@ function BSG_API.ScanCharakterBestand()
                 for slot = 1, slotsAnzahl do
                     local itemInfo = C_Container.GetContainerItemInfo(tasche, slot)
                     if itemInfo and itemInfo.hyperlink then
-                        local itemName = GetItemInfo(itemInfo.hyperlink)
+                        local itemName = BSG_Compat.GetItemInfo(itemInfo.hyperlink)
                         local stackAnzahl = itemInfo.stackCount or 1
                         
                         if itemName and stackAnzahl and stackAnzahl > 0 then
@@ -74,7 +106,7 @@ function BSG_API.ScanCharakterBestand()
                 for slot = 1, bankSlots do
                     local itemInfo = C_Container.GetContainerItemInfo(-1, slot)
                     if itemInfo and itemInfo.hyperlink then
-                        local itemName = GetItemInfo(itemInfo.hyperlink)
+                        local itemName = BSG_Compat.GetItemInfo(itemInfo.hyperlink)
                         local stackAnzahl = itemInfo.stackCount or 1
                         
                         if itemName and stackAnzahl and stackAnzahl > 0 then

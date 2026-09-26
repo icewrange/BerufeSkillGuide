@@ -5,11 +5,6 @@ Dieses Addon ist ein mächtiges All-in-One-Werkzeug für WoW Classic (Era/SoD),
 das kompakte Level-Guides, einen Echtzeit-Taschen-Scanner, eine dynamische
 Ressourcen-Hochrechnung sowie eingebaute Entwickler-Tools bietet.
 
-Besonderheit: Jede Berufs-Datenbank wird bei jedem Login automatisch auf
-Lücken, Überschneidungen und fehlende Materialien geprüft (siehe Punkt 3).
-Das grüne Häkchen neben dem Fenstertitel zeigt dir sofort: dieser Guide
-wurde maschinell validiert, bevor du ihm folgst.
-
 ----------------------------------------------------------------------------
 1. ALLGEMEINE BEFEHLE
 ----------------------------------------------------------------------------
@@ -37,18 +32,54 @@ Simulation beenden:
 
 Verfügbare Berufsnamen für die Simulation:
   Alchimie (oder Alchemie), Schmiedekunst, Ingenieurskunst,
-  Lederverarbeitung, Schneidern, Verzauberkunst, Kochkunst,
-  Erste Hilfe (Alias: "erstehilfe", z.B. /bsg sim erstehilfe100)
+  Lederverarbeitung, Schneidern, Verzauberkunst, Kochkunst
 
 ----------------------------------------------------------------------------
-3. DATENBANK-INSPECTOR (QUALITÄTSKONTROLLE)
+3. GOLD-PLANER (AUKTIONSHAUS-PREISSCAN)
+----------------------------------------------------------------------------
+Berechnet, was die noch fehlenden Materialien des aktuell angezeigten
+Guide-Schritts im Auktionshaus kosten würden. Braucht ein geöffnetes
+Auktionshaus-Fenster (erst mit einem Auktionator sprechen!).
+
+Einzelnes Material:
+  Klick auf das kleine Material-Icon im Guide-Fenster -> scannt den
+  günstigsten Sofortkauf-Preis für die noch fehlende Gesamtmenge.
+  Shift-Klick auf dasselbe Icon durchsucht stattdessen das Auktionshaus
+  nach dem Namen (wie bisher).
+
+Alle Materialien auf einmal:
+  Befehl:        /bsg gold
+  -> Scannt und summiert die Kosten für JEDES Material, das der aktuelle
+     Guide-Schritt noch benötigt, und gibt eine Gesamtsumme im Chat aus.
+
+Ist ein Material im offenen AH-Suchfenster nicht gelistet, wird - falls
+installiert - automatisch TSM als Sicherheitsnetz genutzt, sonst ein
+grober Schätzwert verwendet.
+
+----------------------------------------------------------------------------
+4. CROSS-CHAR-BESTAND (KONTOWEITE MATERIAL-ÜBERSICHT)
+----------------------------------------------------------------------------
+Das Addon scannt automatisch die Taschen (und bei geöffneter Bank auch das
+Bankfach) JEDES Charakters, den du einloggst, und merkt sich den Bestand
+kontoweit. Die "Gesamt-Bedarf"-Anzeige im Guide zählt dadurch bereits den
+Bestand ALLER deiner Charaktere zusammen, nicht nur den des aktuell
+gespielten.
+
+Um zu sehen, AUF WELCHEM Charakter ein Material liegt (z.B. um es per Post
+zu verschicken):
+
+Im Guide-Fenster:
+  Bewege die Maus über ein Material-Icon -> der Tooltip zeigt den Bestand
+  aufgeschlüsselt nach Charakter.
+
+Für ein beliebiges Material (auch außerhalb des aktuellen Guide-Schritts):
+  Befehl:        /bsg wo <Materialname>
+  Beispiel:      /bsg wo Leinenstoff
+
+----------------------------------------------------------------------------
+5. DATENBANK-INSPECTOR (QUALITÄTSKONTROLLE)
 ----------------------------------------------------------------------------
 Scannt die Datenbanken im 'Data'-Ordner in Echtzeit auf Fehler und Lücken.
-Läuft automatisch und lautlos bei jedem Login (kein Chat-Spam) - das
-Ergebnis siehst du als Badge neben dem Fenstertitel:
-  grünes Häkchen (✓)  - Datenbank vollständig geprüft, keine Probleme.
-  oranges "!"         - Es wurden Probleme gefunden, anklicken für Details.
-Für die ausführliche Prüfung im Chat jederzeit manuell aufrufbar:
 
 Befehl:          /bsg check [Berufsname]
 
@@ -63,12 +94,32 @@ Prüfberichte im Chat:
   [DATENBANK REIN]   - Grünes Licht: Der Guide ist zu 100% fehlerfrei.
 
 ----------------------------------------------------------------------------
-4. ADDON-STRUKTUR & ARCHITEKTUR
+6. BUG-REPORT ERSTELLEN
+----------------------------------------------------------------------------
+Da WoW-Addons keine Netzwerkanfragen senden dürfen, kann dieses Addon einen
+Fehlerbericht nicht automatisch irgendwohin schicken. Stattdessen erstellt
+es dir einen fertigen, reinen Text-Report zum Kopieren.
+
+Befehl:          /bsg bugreport [optionale Beschreibung]
+
+Beispiel:
+  /bsg bugreport Die Gesamtmenge für Schneidern wird falsch angezeigt
+
+Der Report enthält Addon-Version, WoW-Build, Sprache, Debug-Status und alle
+seit dem letzten Login erkannten Lua-Fehler dieses Addons. Das Textfeld im
+sich öffnenden Fenster ist bereits markiert - einfach Strg+C drücken und den
+Text z.B. in ein GitHub-Issue, Discord oder einen CurseForge-Kommentar
+einfügen.
+
+----------------------------------------------------------------------------
+7. ADDON-STRUKTUR & ARCHITEKTUR
 ----------------------------------------------------------------------------
 BerufeSkillGuide/
  ├── BerufeSkillGuide.toc    - Registrierung aller Dateien und SavedVariables.
  ├── BerufeSkillGuide.lua    - Hauptdatei (Interface, Logik & Berechnungen).
  ├── Debug.lua               - Modul für den Inspector und die Sandbox.
+ ├── BugReport.lua           - Fehlererfassung & kopierbarer Bug-Report.
+ ├── AccountScanner.lua      - Kontoweiter Taschen-/Bank-Scan (Cross-Char-Bestand).
  ├── README.txt              - Diese Dokumentation.
  └── Data/                   - Ordner für alle Berufs-Datenbanken.
       ├── Daten_Alchimie.lua

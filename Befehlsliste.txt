@@ -26,21 +26,61 @@ Verfügbare Berufsnamen für die Simulation:
 - Schneidern
 - Verzauberkunst
 - Kochkunst
-- Erste Hilfe (Alias für die Simulation: "erstehilfe", z.B. /bsg sim erstehilfe100)
 
 
-[3] DIAGNOSE- & PRÜF-BEFEHLE
+[3] GOLD-PLANER (AUKTIONSHAUS-PREISSCAN)
+----------------------------------------------------------------------------
+Braucht ein geöffnetes Auktionshaus-Fenster.
+
+Klick auf ein Material-Icon im Guide  - AH-Preis für die fehlende Gesamt-
+                                         menge dieses einen Materials.
+Shift-Klick auf ein Material-Icon     - Sucht das Material im AH (wie bisher).
+/bsg gold                             - Scannt & summiert die Kosten für
+                                         ALLE Materialien des aktuellen
+                                         Guide-Schritts auf einmal.
+
+
+[4] CROSS-CHAR-BESTAND (KONTOWEITE MATERIAL-ÜBERSICHT)
+----------------------------------------------------------------------------
+Das Addon scannt automatisch die Taschen/Bank jedes eingeloggten Charakters
+und merkt sich den Bestand kontoweit. Die "Gesamt-Bedarf"-Anzeige im Guide
+zählt bereits ALLE deiner Charaktere zusammen.
+
+Maus über ein Material-Icon im Guide  - Tooltip zeigt den Bestand je Charakter.
+/bsg wo <Materialname>                 - Zeigt den Bestand je Charakter im Chat
+                                          für ein beliebiges Material an.
+                                          (Beispiel: /bsg wo Leinenstoff)
+
+
+[5] DIAGNOSE- & PRÜF-BEFEHLE
 ----------------------------------------------------------------------------
 /bsg check [Beruf]
--> Der Datenbank-Inspector. Scanned die .lua-Datei des Berufs in Echtzeit 
+-> Der Datenbank-Inspector. Scanned die .lua-Datei des Berufs in Echtzeit
    und meldet dir sofort im Chat, ob es Skill-Lücken oder Formatfehler gibt.
    (Beispiel: /bsg check Schmiedekunst)
 
 /bsg debug
--> Der Live-Logger. Schaltet die orangeroten Hintergrund-Meldungen im Chat 
+-> Der Live-Logger. Schaltet die orangeroten Hintergrund-Meldungen im Chat
    ein oder aus, um die Live-Arbeit des Codes zu überwachen.
+
+
+[6] BUG-REPORT
+----------------------------------------------------------------------------
+/bsg bugreport [Beschreibung]
+-> Öffnet ein Fenster mit einem fertigen, bereits markierten Text-Report
+   (Version, WoW-Build, Sprache, Debug-Status, zuletzt erfasste Lua-Fehler
+   dieses Addons und deine optionale Beschreibung). Strg+C drücken und den
+   Text z.B. in ein GitHub-Issue oder Discord einfügen - senden kann das
+   Addon selbst nichts, da Addons keine Netzwerkzugriffe dürfen.
+   (Beispiel: /bsg bugreport Sidebar-Icon reagiert nicht auf Klicks)
 
 
 ============================================================================
                    IMMER BEREIT FÜR DEN ENTWICKLER-EINSATZ!
 ============================================================================
+
+
+/bsg version                  - Schaltet zwischen Classic und WoW Forever um
+/bsg version classic|forever  - Setzt die Spielversion direkt
+/bsg auswahl                  - Auto-Auswahl des Guide-Rezepts im Berufefenster an/aus
+/bsg sim Erste Hilfe 120      - Simulation funktioniert jetzt auch für Erste Hilfe und Sammelberufe
